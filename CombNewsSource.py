@@ -6,7 +6,9 @@ class CombNewsSource(object):
     print "init"
     self.keywordDict = keywordDict
     self.articleSource= self.buildSource(source)
-    self.similarityThreshold = calculateSimilarityThreshold(keywordSimilarity)
+#Will need list for ease of access
+    self.articleUrls = []
+    self.similarityThreshold = self.calculateSimilarityThreshold(keywordSimilarity)
     self.combThruSource(keywordSimilarity)
 # get keywords
 # if at least keywordSimilarity% of keywords exist in keywordDict, 
@@ -21,15 +23,28 @@ class CombNewsSource(object):
     print "combThruSoure"
     for article in self.articleSource.articles: 
       self.downloadAndParseArticle(article)
-      similarityCount = 0
-      print "Title ", article.title
-      for word in article.title:
-        if word in self.keywordDict:
-          similarityCount += 1
-        if similarityCount >= self.similarityThreshold:
-          self.addWordsToDict(article.title)
-          self.addWordsToDict(article.keywords)
+      self.addArticleIfSimilarityThresholdHit(article)
+      	
 # not sure if I should determine similarity based on title alone or keywords included
+  def addArticleIfSimilarityThresholdHit(self, article):
+    similarCount = 0
+    similarCount += self.addWordsIfSimilar(article.title.split(), article, similarCount)
+    self.addWordsIfSimilar(article.keywords, article, similarCount)
+
+  def addWordsIfSimilar(self, words, article, similarityCount):
+    for word in words:
+      print word
+      if word in self.keywordDict:
+      	similarityCount += 1
+      if similarityCount >= self.similarityThreshold:
+      	self.addArticleToCollection(article)
+    return similarityCount
+
+  def addArticleToCollection(self, article):
+    print "\n\n\nAdding ", article.title
+    self.addWordsToDict(article.title)
+    self.addWordsToDict(article.keywords)
+    self.articleUrls.append(article.url) 
 
   def calculateSimilarityThreshold(self, keywordSimilarity):
       return (keywordSimilarity / 100.0) * len(self.keywordDict)
@@ -45,5 +60,5 @@ class CombNewsSource(object):
       else:
       	self.keywordDict[str(word)] = 0
 
-sample = { "Trump": 1, "United States": 1, "judge": 1, "Pence": 1 }
+sample = { "Trump": 1, "ban": 1, "judge": 1, "Pence": 1, "refugee": 1}
 test = CombNewsSource('http://cnn.com', 25, sample)
