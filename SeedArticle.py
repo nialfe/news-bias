@@ -4,7 +4,7 @@ class SeedArticle(object):
 
   def __init__(self, articleUrl):
     print "init"
-    self.article = self.buildSourceFromUrl(articleUrl)
+    self.article = self.buildArticleFromUrl(articleUrl)
     self.keywords = {}
     self.article.download()
     self.article.parse()
@@ -12,7 +12,7 @@ class SeedArticle(object):
 
     self.readPython()
 
-  def buildSourceFromUrl(self, url):
+  def buildArticleFromUrl(self, url):
     print "building source of ", url
     return newspaper.Article(url=url)
 

@@ -6,8 +6,8 @@ class CombNewsSource(object):
     print "init"
     self.keywordDict = keywordDict
     self.articleSource= self.buildSource(source)
+    self.similarityThreshold = calculateSimilarityThreshold(keywordSimilarity)
     self.combThruSource(keywordSimilarity)
-# comb thru source articles
 # get keywords
 # if at least keywordSimilarity% of keywords exist in keywordDict, 
 # put keywords into dict
@@ -20,19 +20,30 @@ class CombNewsSource(object):
   def combThruSource(self, keywordSimilarity):
     print "combThruSoure"
     for article in self.articleSource.articles: 
-      article.download()
-      article.parse()
+      self.downloadAndParseArticle(article)
       similarityCount = 0
-      similarityThreshold = (keywordSimilarity / 100.0) * len(self.keywordDict)
       print "Title ", article.title
       for word in article.title:
         if word in self.keywordDict:
           similarityCount += 1
-        if similarityCount >= similarityThreshold:
-          self.addKeywordToDict(article.title)
+        if similarityCount >= self.similarityThreshold:
+          self.addWordsToDict(article.title)
+          self.addWordsToDict(article.keywords)
+# not sure if I should determine similarity based on title alone or keywords included
 
-  def addKeywordToDict(self, keywords):
-    print "cool"
+  def calculateSimilarityThreshold(self, keywordSimilarity):
+      return (keywordSimilarity / 100.0) * len(self.keywordDict)
+    
+  def downloadAndParseArticle(self, article):
+    article.download()
+    article.parse()
+
+  def addWordsToDict(self, wordsToAdd):
+    for word in wordsToAdd:
+      if word in self.keywordDict:
+      	self.keywordDict[str(word)] += 1
+      else:
+      	self.keywordDict[str(word)] = 0
 
 sample = { "Trump": 1, "United States": 1, "judge": 1, "Pence": 1 }
 test = CombNewsSource('http://cnn.com', 25, sample)
